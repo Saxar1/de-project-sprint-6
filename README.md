@@ -1,40 +1,45 @@
-# Проект 6-го спринта
+# Спринт 6 #
 
-### Описание
-Репозиторий предназначен для сдачи проекта 6-го српинта
-
-### Как работать с репозиторием
-1. В вашем GitHub-аккаунте автоматически создастся репозиторий `de-project-sprint-6` после того, как вы привяжете свой GitHub-аккаунт на Платформе.
-2. Скопируйте репозиторий на свой локальный компьютер, в качестве пароля укажите ваш `Access Token` (получить нужно на странице [Personal Access Tokens](https://github.com/settings/tokens)):
-	* `git clone https://github.com/{{ username }}/de-project-sprint-6.git`
-3. Перейдите в директорию с проектом: 
-	* `cd de-project-sprint-6`
-4. Выполните проект и сохраните получившийся код в локальном репозитории:
-	* `git add .`
-	* `git commit -m 'my best commit'`
-5. Обновите репозиторий в вашем GutHub-аккаунте:
-	* `git push origin main`
-
-### Структура репозитория
-- `/src/dags`
-
-### Как запустить контейнер
-Запустите локально команду:
+* Скопируйте проект в директорию:
+```shell script
+git clone https://github.com/practicum-de/s6-lessons.git
 ```
-docker run \
--d \
--p 3000:3000 \
--p 3002:3002 \
--p 15432:5432 \
---mount src=airflow_sp5,target=/opt/airflow \
---mount src=lesson_sp5,target=/lessons \
---mount src=db_sp5,target=/var/lib/postgresql/data \
---name=de-sprint-5-server-local \
-cr.yandex/crp1r8pht0n0gl25aug1/de-pg-cr-af:latest
+* Перейдите в директорию c проектом:
+```shell script
+cd s6-lessons
+```
+* Создайте [виртуальное окружение](https://docs.python.org/3/library/venv.html) и активируйте его:
+```shell script
+python3 -m venv venv
 ```
 
-После того как запустится контейнер, вам будут доступны:
-- Airflow
-	- `localhost:3000/airflow`
-- БД
-	- `jovyan:jovyan@localhost:15432/de`
+* Активируйте его:
+```shell script
+source venv/bin/activate
+```
+или в Windowns
+```shell script
+source venv/Scripts/activate
+```
+
+* Обновите pip до последней версии:
+```shell script
+pip install --upgrade pip
+```
+* Установите зависимости:
+```shell script
+pip install -r requirements.txt
+```
+Запустите docker-compose:
+`docker compose up -d`
+
+Если у Вас не установлен python 3.8 то самое время сделать это. 
+
+Airflow доступен по адресу http://localhost:3000/airflow
+Metabse - http://localhost:3333/
+
+Если в Metabase на шаге выбора БД отсутствует опция Vertica, проверьте логи на вкладке "Разрешение проблем". Скорее всего вы найдете сообщение "java.lang.AssertionError: Assert failed: Metabase does not have permissions to write to plugins directory /plugins". В таком случае в папке с репозиторием (в которой должна находиться папка plugins) выполните команду `chmod -R 777 plugins` после чего перезапустите контейнер с Metabase - `docker restart s6-lessons_metabase_1`.
+
+В DBeaver рекомендуется использовать драйвер 11.1, если подключение не устанавливается то 12.0.4.
+
+Перед запуском тестов убедитесь что запущен контейнер.
