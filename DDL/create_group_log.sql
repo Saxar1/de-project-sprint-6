@@ -3,8 +3,8 @@ CREATE TABLE ST23052702__STAGING.group_log (
   user_id INT,
   user_id_from INT,
   "event" VARCHAR(10),
-  "datetime" TIMESTAMP
+  group_log_ts TIMESTAMP
 ) 
-ORDER BY "datetime" 
-PARTITION BY "datetime"::date
-GROUP BY calendar_hierarchy_day("datetime"::date, 3, 2)
+ORDER BY group_log_ts 
+PARTITION BY group_log_ts::date
+GROUP BY calendar_hierarchy_day(group_log_ts::date, 3, 2)

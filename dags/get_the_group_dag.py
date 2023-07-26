@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.models import Variable
+import boto3
 
 default_args = {
     'owner': 'airflow',
@@ -10,12 +12,9 @@ default_args = {
     'retry_delay': timedelta(minutes=5)
 }
 
-def download_users_file():
-    import boto3
-    
-    AWS_ACCESS_KEY_ID = "YCAJEWXOyY8Bmyk2eJL-hlt2K"
-    AWS_SECRET_ACCESS_KEY = "YCPs52ajb2jNXxOUsL4-pFDL1HnV2BCPd928_ZoA"
-
+def create_s3_client():
+    AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
     session = boto3.session.Session()
     s3_client = session.client(
         service_name='s3',
@@ -23,49 +22,40 @@ def download_users_file():
         aws_access_key_id=AWS_ACCESS_KEY_ID,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     )
-    s3_client.download_file(
-        Bucket='sprint6',
-        Key='users.csv',
-        Filename='/data/users.csv'
-    )
+    return s3_client
+
+def download_users_file():
+    try:
+        s3_client = create_s3_client()
+        s3_client.download_file(
+            Bucket='sprint6',
+            Key='users.csv',
+            Filename='/data/users.csv'
+        )
+    except Exception as e:
+        print(f"Error while downloading users file: {e}")
 
 def download_groups_file():
-    import boto3
-    
-    AWS_ACCESS_KEY_ID = "YCAJEWXOyY8Bmyk2eJL-hlt2K"
-    AWS_SECRET_ACCESS_KEY = "YCPs52ajb2jNXxOUsL4-pFDL1HnV2BCPd928_ZoA"
-
-    session = boto3.session.Session()
-    s3_client = session.client(
-        service_name='s3',
-        endpoint_url='https://storage.yandexcloud.net',
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    )
-    s3_client.download_file(
-        Bucket='sprint6',
-        Key='groups.csv',
-        Filename='/data/groups.csv'
-    )
+    try:
+        s3_client = create_s3_client()
+        s3_client.download_file(
+            Bucket='sprint6',
+            Key='groups.csv',
+            Filename='/data/groups.csv'
+        )
+    except Exception as e:
+        print(f"Error while downloading groups file: {e}")    
 
 def download_dialogs_file():
-    import boto3
-    
-    AWS_ACCESS_KEY_ID = "YCAJEWXOyY8Bmyk2eJL-hlt2K"
-    AWS_SECRET_ACCESS_KEY = "YCPs52ajb2jNXxOUsL4-pFDL1HnV2BCPd928_ZoA"
-
-    session = boto3.session.Session()
-    s3_client = session.client(
-        service_name='s3',
-        endpoint_url='https://storage.yandexcloud.net',
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    )
-    s3_client.download_file(
-        Bucket='sprint6',
-        Key='dialogs.csv',
-        Filename='/data/dialogs.csv'
-    )
+    try:
+        s3_client = create_s3_client()
+        s3_client.download_file(
+            Bucket='sprint6',
+            Key='dialogs.csv',
+            Filename='/data/dialogs.csv'
+        )
+    except Exception as e:
+        print(f"Error while downloading dialogs file: {e}") 
 
 def check_files():
     with open('/data/users.csv', 'r') as f:

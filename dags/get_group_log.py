@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.models import Variable
+import boto3
 
 default_args = {
     'owner': 'airflow',
@@ -11,23 +13,25 @@ default_args = {
 }
 
 def download_group_log_file():
-    import boto3
-    
-    AWS_ACCESS_KEY_ID = "YCAJEWXOyY8Bmyk2eJL-hlt2K"
-    AWS_SECRET_ACCESS_KEY = "YCPs52ajb2jNXxOUsL4-pFDL1HnV2BCPd928_ZoA"
+    try:
+        AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
+        AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
 
-    session = boto3.session.Session()
-    s3_client = session.client(
-        service_name='s3',
-        endpoint_url='https://storage.yandexcloud.net',
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    )
-    s3_client.download_file(
-        Bucket='sprint6',
-        Key='group_log.csv',
-        Filename='/data/group_log.csv'
-    )
+        session = boto3.session.Session()
+        s3_client = session.client(
+            service_name='s3',
+            endpoint_url='https://storage.yandexcloud.net',
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+        s3_client.download_file(
+            Bucket='sprint6',
+            Key='group_log.csv',
+            Filename='/data/group_log.csv'
+        )
+    except Exception as e:
+        print(f"Error while downloading file: {e}")
+
 
 def check_files():
     with open('/data/group_log.csv', 'r') as f:
@@ -41,3 +45,4 @@ with DAG('download_group_log',
     t2 = PythonOperator(task_id='check_files', python_callable=check_files)
 
     t1 >> t2
+    
